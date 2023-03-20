@@ -33,12 +33,20 @@ router.post('/', checkProjectPayload, async (req, res, next) => {
   }
 });
 
-router.put('/:id', checkProjectPayload, async (req, res, next) => {
-  try {
-    const updatedProject = await Projects.update(req.params.id, { ...req.body });
-    res.json(updatedProject);
-  } catch (err) {
-    next(err);
+router.put('/:id', async (req, res, next) => {
+  const { name, description, completed } = req.body;
+  if (!name || !description || completed === undefined) {
+    next({
+      status: 400,
+      message: 'missing required field',
+    });
+  } else {
+    try {
+      const updatedProject = await Projects.update(req.params.id, { name, description, completed });
+      res.json(updatedProject);
+    } catch (err) {
+      next(err);
+    }
   }
 });
 

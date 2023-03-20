@@ -33,9 +33,9 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.post('/', checkActionPayload, async (req, res, next) => {
-  const { project_id, description, notes } = req.body;
+  const { project_id, description, notes, completed = false } = req.body;
   try {
-    const newAction = await Actions.insert({ project_id, description, notes });
+    const newAction = await Actions.insert({ project_id, description, notes, completed });
     res.status(201).json(newAction);
   } catch (err) {
     next(err);
@@ -43,12 +43,20 @@ router.post('/', checkActionPayload, async (req, res, next) => {
 });
 
 router.put('/:id', checkActionPayload, async (req, res, next) => {
-  const { project_id, description, notes } = req.body;
-  try {
-    const updatedAction = await Actions.update(req.params.id, { project_id, description, notes });
-    res.json(updatedAction);
-  } catch (err) {
-    next(err);
+  const { project_id, description, notes, completed } = req.body;
+
+  if (completed === undefined) {
+    next({
+      status: 400,
+      message: 'missing required completed field',
+    });
+  } else {
+    try {
+      const updatedAction = await Actions.update(req.params.id, { project_id, description, notes, completed });
+      res.json(updatedAction);
+    } catch (err) {
+      next(err);
+    }
   }
 });
 
